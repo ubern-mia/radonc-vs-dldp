@@ -4,14 +4,11 @@ import tempfile
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import matplotlib
 
 from src.scores import generate_results
-
-from sklearn.metrics import confusion_matrix
-
-import matplotlib.pyplot as plt
-
-import matplotlib
 
 font = {"size": 12}
 matplotlib.rc("font", **font)
@@ -20,7 +17,7 @@ matplotlib.rc("font", **font)
 if __name__ == "__main__":
 
     file_path = os.path.dirname(__file__)
-    path_to_data = os.path.join(file_path, 'data/radonc-vs-dldp-data.zip')
+    path_to_data = os.path.join(file_path, "data/radonc-vs-dldp-data.zip")
     zf = zipfile.ZipFile(path_to_data)
 
     with tempfile.TemporaryDirectory() as tempdir:
@@ -59,13 +56,17 @@ if __name__ == "__main__":
         n_oar_gt = 1
         thresh_gt = 0.1
         input_path = os.path.join(data_path, "reference")
-        reference_results = generate_results(input_path, cases, list_oar_names, constraint_type, thresh_gt, n_oar_gt)
+        reference_results = generate_results(
+            input_path, cases, list_oar_names, constraint_type, thresh_gt, n_oar_gt
+        )
 
         alpha = 0.1
         n_oar_pred = 3
         thresh_pred = alpha * thresh_gt
         input_path = os.path.join(data_path, "predicted")
-        predicted_results = generate_results(input_path, cases, list_oar_names, constraint_type, thresh_pred, n_oar_pred)
+        predicted_results = generate_results(
+            input_path, cases, list_oar_names, constraint_type, thresh_pred, n_oar_pred
+        )
 
         data_dict = {
             "Prediction": predicted_results,
@@ -87,7 +88,6 @@ if __name__ == "__main__":
             # plt.title(f"Reference vs {key}")
             # plt.show()
             df_cm = pd.DataFrame(conf_mat, index=cat_names, columns=cat_names)
-            plt.figure(figsize=(24, 24))
             # cm = ConfusionMatrixDisplay(conf_mat, display_labels=cat_names)
             # cm.plot()
             off_diag_mask = np.eye(*conf_mat.shape, dtype=bool)
@@ -96,7 +96,12 @@ if __name__ == "__main__":
             vmax = np.max(conf_mat)
             fig = plt.figure()
             sns.heatmap(
-                df_cm, annot=True, mask=~off_diag_mask, cmap="Greens", vmin=vmin, vmax=vmax
+                df_cm,
+                annot=True,
+                mask=~off_diag_mask,
+                cmap="Greens",
+                vmin=vmin,
+                vmax=vmax,
             )
             sns.heatmap(
                 df_cm,
@@ -108,4 +113,5 @@ if __name__ == "__main__":
                 cbar_kws=dict(ticks=[]),
             )
             plt.title(f"Reference vs {key}")
-            plt.show()
+            plt.savefig(f"figures/confusion_matrix_{key}.png")
+            plt.close()

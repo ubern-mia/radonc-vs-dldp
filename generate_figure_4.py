@@ -2,19 +2,16 @@ import os
 import zipfile
 import tempfile
 import pandas as pd
-
-from src.scores import generate_results
-
+import seaborn as sns
 from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
 )
-
 import matplotlib.pyplot as plt
-import seaborn as sns
-
 import matplotlib
+
+from src.scores import generate_results
 
 font = {"size": 20}
 matplotlib.rc("font", **font)
@@ -23,7 +20,7 @@ matplotlib.rc("font", **font)
 if __name__ == "__main__":
 
     file_path = os.path.dirname(__file__)
-    path_to_data = os.path.join(file_path, 'data/radonc-vs-dldp-data.zip')
+    path_to_data = os.path.join(file_path, "data/radonc-vs-dldp-data.zip")
     zf = zipfile.ZipFile(path_to_data)
 
     with tempfile.TemporaryDirectory() as tempdir:
@@ -64,7 +61,9 @@ if __name__ == "__main__":
         n_oar_gt = 1
         thresh_gt = 0.1
         input_path = os.path.join(data_path, "reference")
-        reference_results = generate_results(input_path, cases, list_oar_names, type, thresh_gt, n_oar_gt)
+        reference_results = generate_results(
+            input_path, cases, list_oar_names, type, thresh_gt, n_oar_gt
+        )
 
         precision_map = {"Pred": {}, "R1": {}, "R2": {}, "R3": {}}
         recall_map = {"Pred": {}, "R1": {}, "R2": {}, "R3": {}}
@@ -90,8 +89,9 @@ if __name__ == "__main__":
             for n_oar_pred in range(9, 0, -1):
                 thresh_pred = alpha * thresh_gt
                 predicted_path = os.path.join(data_path, "predicted")
-                predicted_results = generate_results(predicted_path, cases, list_oar_names, type, thresh_pred,
-                                                     n_oar_pred)
+                predicted_results = generate_results(
+                    predicted_path, cases, list_oar_names, type, thresh_pred, n_oar_pred
+                )
 
                 data_dict = {
                     "Pred": predicted_results,
@@ -137,7 +137,8 @@ if __name__ == "__main__":
         plt.title(r"Variation of Precision (to $\alpha$ and nOAR)")
         plt.gca().set_xlabel(r"$\alpha$")
         plt.ylabel("nOAR")
-        plt.show()
+        plt.savefig("figures/precision_heatmap.png")
+        plt.close()
 
         recall_df = pd.DataFrame.from_dict(recall_map["Pred"])
         recall_array = recall_df.to_numpy()
@@ -156,7 +157,8 @@ if __name__ == "__main__":
         plt.title(r"Variation of Recall (to $\alpha$ and nOAR)")
         plt.gca().set_xlabel(r"$\alpha$")
         plt.ylabel("nOAR")
-        plt.show()
+        plt.savefig("figures/recall_heatmap.png")
+        plt.close()
 
         f1_df = pd.DataFrame.from_dict(f1_map["Pred"])
         f1_array = f1_df.to_numpy()
@@ -175,4 +177,5 @@ if __name__ == "__main__":
         plt.title(r"Variation of F1 score (to $\alpha$ and nOAR)")
         plt.gca().set_xlabel(r"$\alpha$")
         plt.ylabel("nOAR")
-        plt.show()
+        plt.savefig("figures/f1_heatmap.png")
+        plt.close()
